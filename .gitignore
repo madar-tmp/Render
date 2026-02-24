@@ -10,6 +10,7 @@ config/
 .DS_Store
 *.log
 *.tmp
+*.swp
 
 # Sensitive data
 *private*
