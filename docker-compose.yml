@@ -5,25 +5,24 @@ services:
     image: lscr.io/linuxserver/wireguard:latest
     container_name: wireguard
     cap_add:
-      - NET_ADMIN          # Required for VPN interface [citation:1]
-      - SYS_MODULE         # Required for kernel module [citation:1]
+      - NET_ADMIN
+      - SYS_MODULE
     environment:
-      - PUID=1000          # User ID
-      - PGID=1000          # Group ID
-      - TZ=Asia/Kolkata    # Your timezone
-      - SERVERURL=auto     # Auto-detects external IP [citation:1]
-      - SERVERPORT=51820   # WireGuard port
-      - PEERS=phone,laptop # Client names (change as needed) [citation:1]
-      - PEERDNS=auto       # Auto DNS via CoreDNS [citation:1]
-      - INTERNAL_SUBNET=10.13.13.0  # VPN subnet [citation:1]
-      - ALLOWEDIPS=0.0.0.0/0  # Route all traffic through VPN [citation:1]
-      - LOG_CONFS=true     # Show QR codes in logs [citation:1]
+      - PUID=1000
+      - PGID=1000
+      - TZ=Asia/Kolkata
+      - SERVERURL=auto
+      - SERVERPORT=51820
+      - PEERS=phone,laptop
+      - PEERDNS=auto
+      - INTERNAL_SUBNET=10.13.13.0
+      - ALLOWEDIPS=0.0.0.0/0
+      - LOG_CONFS=true
     volumes:
-      - ./config:/config   # Stores all configs [citation:1]
-      - /lib/modules:/lib/modules:ro  # Kernel modules [citation:1]
+      - ./config:/config
+      - /lib/modules:/lib/modules:ro
     ports:
-      - "51820:51820/udp"  # WireGuard port
-      - "8080:8080"        # For web interface (optional)
+      - "51820:51820/udp"
     sysctls:
       - net.ipv4.conf.all.src_valid_mark=1
       - net.ipv4.ip_forward=1
@@ -34,8 +33,8 @@ services:
     container_name: ngrok
     environment:
       - NGROK_AUTHTOKEN=${NGROK_AUTH_TOKEN}
-    command: udp 51820  # Tunnel UDP port 51820 [citation:5]
-    network_mode: service:wireguard  # Share network with wireguard
+    command: udp 51820
+    network_mode: service:wireguard
     depends_on:
       - wireguard
     restart: unless-stopped
