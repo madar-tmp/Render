@@ -1,0 +1,53 @@
+version: "3.8"
+
+services:
+  wireguard:
+    image: lscr.io/linuxserver/wireguard:latest
+    container_name: wireguard
+    cap_add:
+      - NET_ADMIN          # Required for VPN interface [citation:1]
+      - SYS_MODULE         # Required for kernel module [citation:1]
+    environment:
+      - PUID=1000          # User ID
+      - PGID=1000          # Group ID
+      - TZ=Asia/Kolkata    # Your timezone
+      - SERVERURL=auto     # Auto-detects external IP [citation:1]
+      - SERVERPORT=51820   # WireGuard port
+      - PEERS=phone,laptop # Client names (change as needed) [citation:1]
+      - PEERDNS=auto       # Auto DNS via CoreDNS [citation:1]
+      - INTERNAL_SUBNET=10.13.13.0  # VPN subnet [citation:1]
+      - ALLOWEDIPS=0.0.0.0/0  # Route all traffic through VPN [citation:1]
+      - LOG_CONFS=true     # Show QR codes in logs [citation:1]
+    volumes:
+      - ./config:/config   # Stores all configs [citation:1]
+      - /lib/modules:/lib/modules:ro  # Kernel modules [citation:1]
+    ports:
+      - "51820:51820/udp"  # WireGuard port
+      - "8080:8080"        # For web interface (optional)
+    sysctls:
+      - net.ipv4.conf.all.src_valid_mark=1
+      - net.ipv4.ip_forward=1
+    restart: unless-stopped
+
+  ngrok:
+    image: ngrok/ngrok:latest
+    container_name: ngrok
+    environment:
+      - NGROK_AUTHTOKEN=${NGROK_AUTH_TOKEN}
+    command: udp 51820  # Tunnel UDP port 51820 [citation:5]
+    network_mode: service:wireguard  # Share network with wireguard
+    depends_on:
+      - wireguard
+    restart: unless-stopped
+
+  web-ui:
+    image: nginx:alpine
+    container_name: web-ui
+    volumes:
+      - ./config:/usr/share/nginx/html/config:ro
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - "8080:8080"
+    depends_on:
+      - wireguard
+    restart: unless-stopped
