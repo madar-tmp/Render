@@ -1,24 +1,23 @@
-FROM debian
-#FROM debian:bullseye-slim
+FROM debian:bullseye-slim
 
 # Set environment defaults
 ENV TAILSCALE_HOSTNAME="render-vpn"
 ENV TAILSCALE_ADDITIONAL_ARGS=""
 
-# Install required tools
+# Install required tools INCLUDING PYTHON for web server
 RUN apt-get update && apt-get install -y \
     ca-certificates \
     curl \
     wget \
-    # We keep iptables just in case, but we will use userspace-networking
-    iptables \ 
+    python3 \
+    jq \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Tailscale using the official script
+# Install Tailscale
 RUN curl -fsSL https://tailscale.com/install.sh | sh
 
-# Create necessary directories for Tailscale state
-RUN mkdir -p /var/run/tailscale /var/cache/tailscale /var/lib/tailscale
+# Create necessary directories
+RUN mkdir -p /var/run/tailscale /var/cache/tailscale /var/lib/tailscale /tmp
 
 WORKDIR /tailscale.d
 COPY start.sh /tailscale.d/start.sh
