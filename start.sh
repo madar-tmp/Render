@@ -1,23 +1,18 @@
 #!/bin/bash
 
-# 1. Install Tailscale (Force non-interactive)
-curl -fsSL https://tailscale.com/install.sh | sh
+# 1. Start a tiny web server in the background to satisfy Render's health check
+# Render gives you a port in the $PORT variable (usually 10000)
+python3 -m http.server ${PORT:-10000} &
 
-# 2. Start the Tailscale daemon in userspace mode
-# We remove 'sudo' because Render/Cloud Shell containers usually run as the only user.
+# 2. Start Tailscale daemon
 tailscaled --tun=userspace-networking --socks5-server=localhost:1080 &
 
-# 3. Wait for the background process to initialize
 sleep 5
 
-# 4. Connect to Tailscale
-# Removed 'sudo'. Fixed hostname syntax to ${VAR:-default}.
+# 3. Authenticate (Make sure you fixed the Auth Key as discussed!)
 tailscale up \
   --auth-key="${TAILSCALE_AUTHKEY}" \
   --hostname="${TAILSCALE_HOSTNAME:-render-vpn}" \
-  --ssh \
   --advertise-exit-node
 
-# 5. Keep the process alive
-# Using 'wait' is cleaner for Docker/Render than tail -f /dev/null
 wait
