@@ -6,7 +6,7 @@
 
 # 2. Start Tailscale daemon
 #tailscaled --tun=userspace-networking --socks5-server=localhost:1080 &
-sudo tailscaled --tun=userspace-networking &
+tailscaled --tun=userspace-networking &
 sleep 5
 
 # 3. Authenticate (Make sure you fixed the Auth Key as discussed!)
