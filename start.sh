@@ -1,19 +1,30 @@
 #!/bin/bash
 
-# 1. Start a tiny web server in the background to satisfy Render's health check
-# Render gives you a port in the $PORT variable (usually 10000)
-#python3 -m http.server ${PORT:-10000} &
+# CRITICAL: Start a web server on $PORT for Render health checks
+# Simple Python HTTP server (always running)
+python3 -m http.server ${PORT:-10000} --directory /tmp &
 
-# 2. Start Tailscale daemon
-#tailscaled --tun=userspace-networking --socks5-server=localhost:1080 &
-tailscaled --tun=userspace-networking &
+# OR use netcat for even less overhead:
+# while true; do echo -e "HTTP/1.1 200 OK\n\nRender Tailscale Running" | nc -l -p ${PORT:-10000} -q 1; done &
+
+# Start Tailscale daemon
+tailscaled --tun=userspace-networking --verbose=1 &
 sleep 5
 
-# 3. Authenticate (Make sure you fixed the Auth Key as discussed!)
+# Up with exit node
 tailscale up \
   --auth-key="${TAILSCALE_AUTHKEY}" \
   --hostname="${TAILSCALE_HOSTNAME:-render-vpn}" \
   --advertise-exit-node \
-  --ssh
+  --ssh \
+  --accept-dns=false
 
-wait
+# Keep container alive with periodic status updates
+while true; do
+  echo "$(date): Tailscale status - $(tailscale status --json | jq -r '.Self.Online')"
+  
+  # Touch a file to keep the web server serving fresh content
+  echo "Last updated: $(date)" > /tmp/index.html
+  
+  sleep 60
+done
