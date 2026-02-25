@@ -1,20 +1,23 @@
 #!/bin/bash
 
-# Install Tailscale
+# 1. Install Tailscale (Force non-interactive)
 curl -fsSL https://tailscale.com/install.sh | sh
 
-# Start tailscaled in background
-sudo tailscaled --state=/var/lib/tailscale/tailscaled.state \
-  --socket=/var/run/tailscale/tailscaled.sock \
-  --tun=userspace-networking \
-  --socks5-server=localhost:1055 \
-  --outbound-http-proxy-listen=localhost:1055 &
+# 2. Start the Tailscale daemon in userspace mode
+# We remove 'sudo' because Render/Cloud Shell containers usually run as the only user.
+tailscaled --tun=userspace-networking --socks5-server=localhost:1080 &
 
-# Give it time to start
-sleep 3
+# 3. Wait for the background process to initialize
+sleep 5
 
-# CORRECT SYNTAX - with --auth-key= prefix
-sudo tailscale up --ssh --auth-key=${TAILSCALE_AUTHKEY} --hostname=${TAILSCALE_HOSTNAME:-render-vpn} --advertise-exit-node
+# 4. Connect to Tailscale
+# Removed 'sudo'. Fixed hostname syntax to ${VAR:-default}.
+tailscale up \
+  --auth-key="${TAILSCALE_AUTHKEY}" \
+  --hostname="${TAILSCALE_HOSTNAME:-render-vpn}" \
+  --ssh \
+  --advertise-exit-node
 
-# Keep alive
-tail -f /dev/null
+# 5. Keep the process alive
+# Using 'wait' is cleaner for Docker/Render than tail -f /dev/null
+wait
