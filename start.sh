@@ -6,7 +6,7 @@ python3 -m http.server ${PORT:-10000} --directory /tmp &
 
 # OR use netcat for even less overhead:
 # while true; do echo -e "HTTP/1.1 200 OK\n\nRender Tailscale Running" | nc -l -p ${PORT:-10000} -q 1; done &
-
+apt install sudo
 # Start Tailscale daemon
 sudo tailscaled --tun=userspace-networking --verbose=1 &
 #tailscaled --tun=userspace-networking --verbose=1 &
