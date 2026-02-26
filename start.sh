@@ -8,16 +8,17 @@ python3 -m http.server ${PORT:-10000} --directory /tmp &
 # while true; do echo -e "HTTP/1.1 200 OK\n\nRender Tailscale Running" | nc -l -p ${PORT:-10000} -q 1; done &
 
 # Start Tailscale daemon
-tailscaled --tun=userspace-networking --verbose=1 &
+sudo tailscaled --tun=userspace-networking --verbose=1 &
+#tailscaled --tun=userspace-networking --verbose=1 &
 sleep 5
 
 # Up with exit node
 tailscale up \
   --auth-key="${TAILSCALE_AUTHKEY}" \
-  --hostname="${TAILSCALE_HOSTNAME:-render-vpn}" \
+  --hostname="${TAILSCALE_HOSTNAME}" \
   --advertise-exit-node \
   --ssh \
-  --accept-dns=false
+  --accept-dns=true
 
 # Keep container alive with periodic status updates
 while true; do
