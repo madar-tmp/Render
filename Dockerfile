@@ -1,7 +1,7 @@
 FROM debian:bullseye-slim
 
 # Set environment defaults
-ENV TAILSCALE_HOSTNAME="render-vpn"
+ENV TAILSCALE_HOSTNAME="render-server-surya"
 ENV TAILSCALE_ADDITIONAL_ARGS=""
 
 # Install required tools INCLUDING PYTHON for web server
