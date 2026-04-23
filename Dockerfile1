@@ -1,5 +1,5 @@
 FROM debian:bullseye-slim
-
+#without APT
 # Set environment defaults
 ENV TAILSCALE_HOSTNAME="render-server-surya"
 ENV TAILSCALE_ADDITIONAL_ARGS=""
