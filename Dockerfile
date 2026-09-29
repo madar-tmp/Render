@@ -1,16 +1,19 @@
 FROM debian:bullseye-slim
-#without APT
+
 # Set environment defaults
 ENV TAILSCALE_HOSTNAME="render-server-surya"
 ENV TAILSCALE_ADDITIONAL_ARGS=""
 
-# Install required tools INCLUDING PYTHON for web server
-RUN apt-get update && apt-get install -y \
-    ca-certificates \
-    curl \
-    wget \
-    python3 \
-    jq \
+# Fix sources for archived bullseye and install required tools
+RUN echo "deb http://archive.debian.org/debian bullseye main" > /etc/apt/sources.list && \
+    echo "deb http://archive.debian.org/debian-security bullseye-security main" >> /etc/apt/sources.list && \
+    apt-get -o Acquire::Check-Valid-Until=false update && \
+    apt-get install -y --no-install-recommends \
+        ca-certificates \
+        curl \
+        wget \
+        python3 \
+        jq \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Tailscale
